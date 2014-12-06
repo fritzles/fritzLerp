@@ -29,10 +29,10 @@ var leap = io
             // console.log("------------------------------------");
             
             console.log(data.fingerData);
-            exec('python test.py ' + data.fingerData, function callback(error, stdout, stderr){
-                console.log(stdout);
-                output = stdout;
-            });
+            // exec('python test.py ' + data.fingerData, function callback(error, stdout, stderr){
+            //     console.log(stdout);
+            //     output = stdout;
+            // });
 
             socket.emit('date', {'date': new Date()}); 
         })

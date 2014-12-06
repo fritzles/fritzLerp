@@ -84,7 +84,6 @@
    
     setInterval(function(){
             socket.emit('fingers', {"fingerData":fingerData});
-            fingerData = fingerData+1;
         }, 1000);
 
     
@@ -129,6 +128,28 @@
         //Determine what gesture it is
         
         // label.innerHTML = isSigning(isExtended[0],isExtended[1],isExtended[2],isExtended[3],isExtended[4]);
+
+        var stringToPass = "";
+        for(i = 0; i < 5; i++){
+          var finger = hand.fingers[i];
+          for(j = 0; j < 4; j++){
+            var bone = finger.bones[j];
+            var boneBase = bone.prevJoint;
+            var boneTip = bone.nextJoint;
+            var xTip = boneTip[0];
+            var yTip = boneTip[1];
+            var zTip = boneTip[2];
+            if( (j==0) || (j==3) ){
+              stringToPass += xTip + ",";
+              stringToPass += yTip + ",";
+              stringToPass += zTip + ",";
+            }
+          }
+        }
+
+        label.innerHTML = stringToPass;
+        fingerData = stringToPass;
+
         
 
        
