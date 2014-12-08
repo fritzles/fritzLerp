@@ -15,85 +15,216 @@
         font-family: 'Myriad Pro', Helvetica, Arial, 'Lucida Grande', sans-serif;
         font-size: 24pt;
         color: white;
-        background-color: #80b865;
+        /*background-color: aliceblue;*/
+        background-image: url('http://www.uvm.edu/~mdfritz/bg.png');
       }
       label {
         position: fixed;
         white-space: nowrap;
       }
+      #labels{
+        float: right;
+      }
+      #pictures{
+        float:right;
+        /*display: inline;*/
+        position: absolute;
+        right: 0;
+        margin-top: 2em;
+      }
     </style>
   </head>
 
-  <body>
+  <body  onload="checkCookie()">
     <div id="labels"></div>
-    <div id="date"></div>
-    <div id="stats"></div>
+    <div id="pictures"></div>
+    <div id="guess"></div>
+    
   </body>
 
   
 
   <script type="text/javascript">
 
+
+
+
+
+function setCookie(cname,cvalue,exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (1*24*60*60*1000));
+    var expires = "expires=" + d.toGMTString();
+    document.cookie = cname+"="+cvalue+"; "+expires;
+}
+
+function getCookie(cname) {
+    var name = cname + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0; i<ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1);
+        if (c.indexOf(name) != -1) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
+function checkCookie() {
+    var user=getCookie("username");
+
+    if (user != "") {
+        $('title').text("Handless Demo: " + user);
+        alert("Welcome again " + user);
+    } else {
+       user = prompt("Please enter your name:","");
+       if (user != "" && user != null) {
+            $('title').text("Handy Demo: " + user);
+           setCookie("username", user, 30);
+       }
+    }
+}
+
+var data = '{"name": "mkyong","age": 30,"address": {"streetAddress": "88 8nd Street","city": "New York"},"phoneNumber": [{"type": "home","number": "111 111-1111"},{"type": "fax","number": "222 222-2222"}]}';
+ 
+var json = JSON.parse(data);
+
+
+var user=getCookie("username");
+console.log(user);
+var levels = {1:2,2:4,3:5,4:9};
+
+var userData = '{"user": {"'+user+'":{"digits": {"0":{"attempted":0, "correct": 0},"1":{"attempted":0, "correct": 0},"2":{"attempted":0, "correct": 0},"3":{"attempted":0, "correct": 0},"4":{"attempted":0, "correct": 0},"5":{"attempted":0, "correct": 0},"6":{"attempted":0, "correct": 0},"7":{"attempted":0, "correct": 0},"8":{"attempted":0, "correct": 0},"9":{"attempted":0, "correct": 0}}, "level":1}}}';
+
+var json = JSON.parse(userData);
+var num = 0;
+// console.log(json["user"][getCookie("username")]["digits"]["0"]["attempted"]);
+
+
+var testThese = [];
+var percentCorrect;
+// console.log(json["user"][getCookie("username")]["digits"]["0"]["attempted"]);
+// console.log(levels.userData.user.level);
+// console.log(userData.user.level);
+
+function makeNumberList(){
+  // var max = levels[json["user"][getCookie("username")]["level"]];
+  // console.log("------");
+  // console.log(max);
+  // console.log("-------");
+  var list = [];
+  for (i = 0; i <= max; i++) { 
+      list.push(i);
+      console.log(i);
+  }
+
+  return list;
+}
+
+
   var socket = io.connect('http://54.68.163.235:80/leap');
-  var dateTemp;
-  $('#date').text("Loading...");
+  var signing;
+  $('#labels').text("Loading...");
+  // $('title').text("Welcome " + sessionStorage.getItem("username"));
 
   socket.on('date', function(data){
-        $('#date').text(data.date);
-        dateTemp = data.date;
+        $('#guess').text("Your gesture represents: " + data.date);
+        // label.innerHTML = data.date;
+        signing = data.date;
+        // console.log(data);
       });
 
  
 
   var riggedHandPlugin;
 
-    // function isSigning(thumb, index, middle, ring, pinky ){
-    //     var thing = (thumb*1) + (index*2) + (middle*4) + (ring*8) + (pinky*16);
-        
-    //     switch(thing){
-    //       case 0:
-    //         return 0;
-            
-    //       case 2:
-    //         return 1;
-            
-    //       case 6:
-    //         return 2;
-            
-    //       case 7:
-    //         return 3;
-            
-    //       case 30:
-    //         return 4;
-    //       case 31:
-    //         return 5;
-            
-    //       case 14:
-    //         return 6;
-    //       case 22:
-    //         return 7;
-    //       case 26:
-    //         return 8;
-    //       case 28:
-    //         return 9;
-    //       default:
-    //         return "Not Recognized";
-            
-    //     } }
+    
     var fingerData = 0;
    
     setInterval(function(){
             socket.emit('fingers', {"fingerData":fingerData});
-        }, 1000);
+        }, 750);
 
-    
+    function randomASL(){
+      var rand;
+      rand = testThese[Math.floor(Math.random() * testThese.length)];
+      return rand;
+    }
 
-    Leap.loop({
+    function increaseLevel(){
+      console.log("check if user needs to increase level");
+      var increase = true;
+      var tempStat = 0;
+      var total = 0;
+      var numDigits = levels[json["user"][getCookie("username")]["level"]]*2;
+      for (i = 0; i < testThese.length; i++){
+        tempStat = json["user"][getCookie("username")]["digits"][i]["attempted"];
+        if(tempStat == 0){
+          increase = false;
+        }else{
+          total += tempStat;
+        }
+      }
+
+      if(increase){
+        if(total < numDigits){
+          increase = false;
+        }
+      }
+
+      if(increase){
+        json["user"][getCookie("username")]["level"] = json["user"][getCookie("username")]["level"] + 1;
+        alert("Your level has increased to: " + json["user"][getCookie("username")]["level"]);
+        max = levels[json["user"][getCookie("username")]["level"]];
+        testThese = makeNumberList(); 
+      }
+    }
+
+     var isSigned = false;
+     var ASL;
+     var nextLevel = false;
+     var max = levels[json["user"][getCookie("username")]["level"]];
+     testThese = makeNumberList();
+     
+    var controller = Leap.loop({
+
       hand: function(hand){
+
+
         
+        
+        // if(!nextLevel)
+        // {
+        //     testThese.length = 0;
+        //     makeNumberList();
+        //     nextLevel = true;
+        // }
         
         var label = hand.data('label');
         var position = hand.palmPosition;
+
+        if (!isSigned){
+          ASL = randomASL();
+          isSigned = true;
+          
+          $('#labels').text("Please sign: " + ASL);
+          $('#pictures').html("<img src='http://www.uvm.edu/~mdfritz/" + ASL + ".png'>");
+          // $('body').animate({'background-color': 'aliceblue'}, 'slow');
+        }        
+
+        if( ASL == signing){
+
+          console.log(json["user"][getCookie("username")]["digits"][i]["attempted"]);
+
+          json["user"][getCookie("username")]["digits"][ASL]["attempted"] = json["user"][getCookie("username")]["digits"][ASL]["attempted"] + 1;
+          console.log(json["user"][getCookie("username")]["digits"][ASL]["attempted"])
+          isSigned = false;
+          increaseLevel();
+          $('#labels').text("Good job!");
+          $('#guess').text("Calculating new number...");
+
+          // $('body').animate({'background-color': 'green'}, 'slow');
+        }
 
         var fingers = [];
 
@@ -122,7 +253,7 @@
         //   i = Number(extend.extended);
         //   isExtended.push(i);
         // })
-
+        
 
 
         //Determine what gesture it is
@@ -147,12 +278,14 @@
           }
         }
 
-        label.innerHTML = stringToPass;
+        
         fingerData = stringToPass;
 
         
 
-       
+      
+
+     
         var handMesh = hand.data('riggedHand.mesh');
 
         var screenPosition = handMesh.screenPosition(
@@ -163,10 +296,21 @@
         label.style.left = screenPosition.x + 'px';
         label.style.bottom = screenPosition.y + 'px';
 
+        
+
       }
     })
     .use('riggedHand')
-    .use('handEntry')
+    .use('handEntry', {
+        scale: 1.5,
+        boneColors: function (boneMesh, leapHand){
+          return {
+            hue: 1.5,
+            saturation: leapHand.confidence,
+            lightness: 5.0
+          }
+        }
+      })
     .on('handLost', function(hand){
         var label = hand.data('label');
         if (label){

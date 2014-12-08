@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-import sys
-from flask import jsonify 
+# import sys
+# from flask import jsonify 
 import json
 import numpy as np
 import pickle
@@ -23,17 +23,24 @@ def CenterData(X):
     meanValue = allZCoordinates.mean()
     X[0,2::3] = allZCoordinates - meanValue
     return X
- 
-clf = pickle.load( open("userData/classifier.p", "rb") ) # Load data from saved classifier
-testData = np.zeros((1,30),dtype='f')
+def main():
+    clf = pickle.load( open("userData/classifier.p", "rb") ) # Load data from saved classifier
+    testData = np.zeros((1,30),dtype='f')
 
-testData = sys.args[1].split(',')
+    a = sys.argv[1].split(',')
 
-for i in range(0,30):
-    testData[0,i] = float(a[i]);
+    for i in range(0,30):
+        testData[0,i] = float(a[i]);
+    # print "hi"
+    testData = CenterData(testData)
 
-testData = CenterData(testData)
+    predictedClass = clf.predict( testData ) # Finds the predicted sign language number    
 
-predictedClass = clf.predict( testData ) # Finds the predicted sign language number    
+    num = int(predictedClass[0])
 
-num = int(predictedClass[0])
+    print num
+
+    return
+
+if __name__ == "__main__":
+    main()

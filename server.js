@@ -16,9 +16,11 @@ server.get('/', function indexHTML(req, res, next) {
         res.writeHead(200);
         res.end(data);
         next();
-        console.log(" ");
+        // console.log(" ");
     });
 });
+
+server.get('/([a-zA-Z.\/])+/', restify.serveStatic({ directory: __dirname, default: 'index.html' }));
 
 var leap = io
     .of('/leap')
@@ -28,13 +30,16 @@ var leap = io
             var output;                
             // console.log("------------------------------------");
             
-            console.log(data.fingerData);
-            // exec('python test.py ' + data.fingerData, function callback(error, stdout, stderr){
-            //     console.log(stdout);
-            //     output = stdout;
-            // });
+            //console.log(data.fingerData);
+            exec('python test.py ' + data.fingerData, function callback(error, stdout, stderr){
+                // console.log(stdout);
+                // output = stdout;
+                socket.emit('date', {'date': stdout});
+            });
 
-            socket.emit('date', {'date': new Date()}); 
+            // console.log(output);
+
+            // socket.emit('guess', {'gesture': output}); 
         })
     });
 
