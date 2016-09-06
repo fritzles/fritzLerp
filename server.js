@@ -11,12 +11,10 @@ server.get('/', function indexHTML(req, res, next) {
             next(err);
             return;
         }
-
         res.setHeader('Content-Type', 'text/html');
         res.writeHead(200);
         res.end(data);
         next();
-        // console.log(" ");
     });
 });
 
@@ -28,18 +26,9 @@ var leap = io
         //send data to client after recieving data   
         socket.on('fingers', function(data){
             var output;                
-            // console.log("------------------------------------");
-            
-            //console.log(data.fingerData);
             exec('python test.py ' + data.fingerData, function callback(error, stdout, stderr){
-                // console.log(stdout);
-                // output = stdout;
                 socket.emit('date', {'date': stdout});
             });
-
-            // console.log(output);
-
-            // socket.emit('guess', {'gesture': output}); 
         })
     });
 
